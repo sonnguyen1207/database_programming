@@ -1,8 +1,7 @@
 # Module Imports
-import mariadb
-import sys
 import json
 from db_connection import get_connection
+import random
 
 
 # Read data from file
@@ -20,16 +19,16 @@ cursor = conn.cursor()
 cursor.execute(
     "DELETE FROM electricity"
 )
+cursor.execute("SELECT id FROM properties")
+property_ids = [row[0] for row in cursor.fetchall()]
 
 for data in d:
-    query = "INSERT INTO electricity(property,timestamp,value) VALUES (1, %s, %s)"
-    values = (data['timestamp'], data['value'])
+    query = "INSERT INTO electricity(property,timestamp,value) VALUES (%s, %s, %s)"
+    values = (random.choice(property_ids), data['timestamp'], data['value'])
     cursor.execute(query, values)
 
 conn.commit()
 
 # Clean up cursor resource
 cursor.close()
-
-# Close Connection
-conn.close()
+print("✅ Data inserted from JSON")

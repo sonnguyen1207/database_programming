@@ -10,10 +10,10 @@ print("2. MAX")
 print("3. AVG")
 print("4. Exit")
 
+choice = input("Your choice: ")
+
 
 while True:
-    choice = input("Your choice: ")
-
     if choice == "1":
         cursor.execute("""
             SELECT value,id ,property_code
