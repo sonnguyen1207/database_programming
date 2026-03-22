@@ -1,4 +1,6 @@
- # row = cursor.fetchone()
-    # if not row:
-    #     print("Property not found")
-    #     return
+cursor.execute("""
+        #     SELECT value,id ,property_code
+        #     FROM measurements
+        #     ORDER BY value ASC
+        #     LIMIT 1
+        # """)

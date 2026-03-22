@@ -15,6 +15,13 @@ while True:
     choice = input("Your choice: ")
 
     if choice == "1":
+        #  nested query (or subquery)
+        # cursor.execute("""
+        #     SELECT value, id, property_code
+        #     FROM measurements
+        #     WHERE value = (SELECT MIN(value) FROM measurements);
+        # """)
+        # sorts measurements table based on the value column in ascending order(smallest to largest) and get the first row
         cursor.execute("""
             SELECT value,id ,property_code
             FROM measurements
@@ -28,6 +35,7 @@ while True:
     # MAX
     # -----------------------------
     elif choice == "2":
+        # sorts measurements table based on the value column in descending order(largest to smallest) and get the first row
         cursor.execute("""
             SELECT value,id ,property_code
             FROM measurements
