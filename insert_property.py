@@ -27,7 +27,7 @@ def delete_property_by_id(property_id):
 
 def delete_property_by_code(property_code):
     # code is unique
-    # need to delete children (electricity) before delete parent (property)
+    # need to delete children (electricity) before delete parent (property), can also do in database (ON DELETE CASCADE)
     cursor.execute("SELECT id FROM properties WHERE code = ?",
                    (property_code,))
     # delete child rows

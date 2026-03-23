@@ -15,6 +15,7 @@ while True:
     choice = input("Your choice: ")
 
     if choice == "1":
+        # The "Random Row" Trap: SELECT MIN(value), id, property_code FROM measurements LIMIT 1
         #  nested query (or subquery)
         # cursor.execute("""
         #     SELECT value, id, property_code
