@@ -15,7 +15,10 @@ CREATE TABLE IF NOT EXISTS electricity (
     property BIGINT,
     timestamp DATETIME,
     value INT,
-    FOREIGN KEY (property) REFERENCES properties(id)
+    FOREIGN KEY (property)
+        REFERENCES properties(id)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE
 );
 
 
