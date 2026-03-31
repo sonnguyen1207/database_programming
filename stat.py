@@ -4,11 +4,34 @@ from db_connection import get_connection
 conn = get_connection()
 cursor = conn.cursor()
 
+
+def stats_per_property():
+    query = """
+        SELECT property_code,
+               MIN(value),
+               MAX(value),
+               AVG(value)
+        FROM measurements
+        GROUP BY property_code
+    """
+
+    cursor.execute(query)
+    rows = cursor.fetchall()
+
+    print("\n--- Statistics per property ---")
+    print(f"{'Property':<10} {'MIN':<10} {'MAX':<10} {'AVG':<10}")
+
+    for row in rows:
+        property_code, min_val, max_val, avg_val = row
+        print(f"{property_code:<10} {min_val:<10.2f} {max_val:<10.2f} {avg_val:<10.2f}")
+
+
 print("Choose statistic:")
 print("1. MIN")
 print("2. MAX")
 print("3. AVG")
-print("4. Exit")
+print("4. Stats Per Property")
+print("5. Exit")
 
 
 while True:
@@ -56,8 +79,9 @@ while True:
         """)
         row = cursor.fetchone()
         print(f"AVG value: {row})")
-
     elif choice == "4":
+        stats_per_property()
+    elif choice == "5":
         break
     else:
         print("❌ Invalid choice")
