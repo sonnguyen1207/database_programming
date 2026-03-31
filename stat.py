@@ -18,12 +18,33 @@ def stats_per_property():
     cursor.execute(query)
     rows = cursor.fetchall()
 
-    print("\n--- Statistics per property ---")
+    print("--- Statistics per property ---")
+    # Left-align 10 spaces (included Property, min....)
     print(f"{'Property':<10} {'MIN':<10} {'MAX':<10} {'AVG':<10}")
 
     for row in rows:
         property_code, min_val, max_val, avg_val = row
         print(f"{property_code:<10} {min_val:<10.2f} {max_val:<10.2f} {avg_val:<10.2f}")
+
+
+def get_min_value():
+    # conn = get_connection()
+    # cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT value, id, property_code
+        FROM measurements
+        ORDER BY value ASC
+        LIMIT 1
+    """)
+
+    row = cursor.fetchone()
+
+    if row:
+        print(f"MIN value: {row[0]} id: {row[1]} property code: {row[2]}")
+
+    # cursor.close()
+    # conn.close()
 
 
 print("Choose statistic:")
@@ -46,14 +67,15 @@ while True:
         #     WHERE value = (SELECT MIN(value) FROM measurements);
         # """)
         # sorts measurements table based on the value column in ascending order(smallest to largest) and get the first row
-        cursor.execute("""
-            SELECT value,id ,property_code
-            FROM measurements
-            ORDER BY value ASC
-            LIMIT 1
-        """)
-        row = cursor.fetchone()
-        print(f"MIN value: {row[0]} id: {row[1]} property code: {row[2]}")
+        get_min_value()
+        # cursor.execute("""
+        #     SELECT value,id ,property_code
+        #     FROM measurements
+        #     ORDER BY value ASC
+        #     LIMIT 1
+        # """)
+        # row = cursor.fetchone()
+        # print(f"MIN value: {row[0]} id: {row[1]} property code: {row[2]}")
 
     # -----------------------------
     # MAX
