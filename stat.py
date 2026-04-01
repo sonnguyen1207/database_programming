@@ -30,20 +30,25 @@ def stats_per_property():
 
 
 def get_min_value():
+    # from db_connection import get_connection
     conn = get_connection()
     cursor = conn.cursor()
 
+    # sorts measurements table based on the value column in ascending order(smallest to largest) and get the first row
     cursor.execute("""
-        SELECT value, id, property_code
-        FROM measurements
-        ORDER BY value ASC
+        SELECT m.value, m.id, p.code, p.name, p.location
+        FROM measurements m
+        JOIN properties p ON m.property_code = p.code
+        ORDER BY m.value ASC
         LIMIT 1
     """)
 
     row = cursor.fetchone()
 
     if row:
-        print(f"MIN value: {row[0]} id: {row[1]} property code: {row[2]}")
+        value, id_, code, name, location = row
+        print(
+            f"MIN value: {value} | id: {id_} | code: {code} | name: {name} | location: {location}")
 
     cursor.close()
     conn.close()
@@ -53,14 +58,21 @@ def get_max_value():
     conn = get_connection()
     cursor = conn.cursor()
 
+    # sorts measurements table based on the value column in descending order(largest to smallest) and get the first row
     cursor.execute("""
-            SELECT value,id ,property_code
-            FROM measurements
-            ORDER BY value DESC
-            LIMIT 1
-        """)
+        SELECT m.value, m.id, p.code, p.name, p.location
+        FROM measurements m
+        JOIN properties p ON m.property_code = p.code
+        ORDER BY m.value DESC
+        LIMIT 1
+    """)
+
     row = cursor.fetchone()
-    print(f"MAX value: {row[0]} id: {row[1]} property code: {row[2]}")
+
+    if row:
+        value, id_, code, name, location = row
+        print(
+            f"MAX value: {value} | id: {id_} | code: {code} | name: {name} | location: {location}")
 
     cursor.close()
     conn.close()
@@ -100,7 +112,6 @@ while True:
         #     FROM measurements
         #     WHERE value = (SELECT MIN(value) FROM measurements);
         # """)
-        # sorts measurements table based on the value column in ascending order(smallest to largest) and get the first row
         get_min_value()
     # -----------------------------
     # MAX
