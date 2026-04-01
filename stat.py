@@ -1,11 +1,11 @@
 
 from db_connection import get_connection
 
-conn = get_connection()
-cursor = conn.cursor()
-
 
 def stats_per_property():
+    conn = get_connection()
+    cursor = conn.cursor()
+
     query = """
         SELECT property_code,
                MIN(value),
@@ -25,11 +25,13 @@ def stats_per_property():
     for row in rows:
         property_code, min_val, max_val, avg_val = row
         print(f"{property_code:<10} {min_val:<10.2f} {max_val:<10.2f} {avg_val:<10.2f}")
+    cursor.close()
+    conn.close()
 
 
 def get_min_value():
-    # conn = get_connection()
-    # cursor = conn.cursor()
+    conn = get_connection()
+    cursor = conn.cursor()
 
     cursor.execute("""
         SELECT value, id, property_code
@@ -43,8 +45,40 @@ def get_min_value():
     if row:
         print(f"MIN value: {row[0]} id: {row[1]} property code: {row[2]}")
 
-    # cursor.close()
-    # conn.close()
+    cursor.close()
+    conn.close()
+
+
+def get_max_value():
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+            SELECT value,id ,property_code
+            FROM measurements
+            ORDER BY value DESC
+            LIMIT 1
+        """)
+    row = cursor.fetchone()
+    print(f"MAX value: {row[0]} id: {row[1]} property code: {row[2]}")
+
+    cursor.close()
+    conn.close()
+
+
+def get_average_value():
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+            SELECT AVG(value)
+            FROM measurements
+        """)
+    row = cursor.fetchone()
+    print(f"AVG value: {row})")
+
+    cursor.close()
+    conn.close()
 
 
 print("Choose statistic:")
@@ -68,44 +102,21 @@ while True:
         # """)
         # sorts measurements table based on the value column in ascending order(smallest to largest) and get the first row
         get_min_value()
-        # cursor.execute("""
-        #     SELECT value,id ,property_code
-        #     FROM measurements
-        #     ORDER BY value ASC
-        #     LIMIT 1
-        # """)
-        # row = cursor.fetchone()
-        # print(f"MIN value: {row[0]} id: {row[1]} property code: {row[2]}")
-
     # -----------------------------
     # MAX
     # -----------------------------
     elif choice == "2":
         # sorts measurements table based on the value column in descending order(largest to smallest) and get the first row
-        cursor.execute("""
-            SELECT value,id ,property_code
-            FROM measurements
-            ORDER BY value DESC
-            LIMIT 1
-        """)
-        row = cursor.fetchone()
-        print(f"MAX value: {row[0]} id: {row[1]} property code: {row[2]}")
+        get_max_value()
 
     # -----------------------------
     # AVG
     # -----------------------------
     elif choice == "3":
-        cursor.execute("""
-            SELECT AVG(value)
-            FROM measurements
-        """)
-        row = cursor.fetchone()
-        print(f"AVG value: {row})")
+        get_average_value()
     elif choice == "4":
         stats_per_property()
     elif choice == "5":
         break
     else:
         print("❌ Invalid choice")
-
-conn.close()
