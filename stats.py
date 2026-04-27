@@ -101,7 +101,7 @@ def get_average_value():
 
 def print_average_value():
     row = get_average_value()
-    print(f"AVG value: {row})")
+    print(f"AVG value: {row[0]:.2f})")
 
 
 def get_total_consumption_per_property():
@@ -169,8 +169,6 @@ def get_average_daily_consumption():
             JOIN properties p ON p.id = e.property
             GROUP BY p.name;
         """)
-    print("--- Average Daily Consumption ---")
-    print(f"{'Name':<20} {'Average kwh':<20}")
     rows = cursor.fetchall()
     cursor.close()
     conn.close()
@@ -178,6 +176,8 @@ def get_average_daily_consumption():
 
 
 def print_average_daily_consumption():
+    print("--- Average Daily Consumption ---")
+    print(f"{'Name':<20} {'Average kwh':<20}")
     rows = get_average_daily_consumption()
     for row in rows:
         name, avg_kwh = row
@@ -266,6 +266,7 @@ def get_highest_daily_consumption():
     rows = cursor.fetchall()
     cursor.close()
     conn.close()
+    return rows
 
 
 def print_highest_daily_consumption():
@@ -304,7 +305,7 @@ def print_daily_ranking():
     for row in rows:
         timestamp, name, value, rank_pos = row
         print(
-            f"{timestamp.strftime("%Y-%m-%d"):<20} {name:<20}  {value:< 20} {rank_pos:< 20}")
+            f"{timestamp.strftime('%Y-%m-%d'):<20} {name:<20}  {value:< 20} {rank_pos:< 20}")
 
 
 def get_3day_moving_avg():
