@@ -1,5 +1,6 @@
 
 from db_connection import get_connection
+from datetime import datetime
 
 
 def stats_per_property():
@@ -93,12 +94,226 @@ def get_average_value():
     conn.close()
 
 
+def get_total_consumption_per_roperty():
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+            SELECT 
+                p.name,
+                SUM(e.value) AS total_kwh
+            FROM electricity e
+            JOIN properties p ON p.id = e.property
+            GROUP BY p.name;
+        """)
+    print("--- Total Consumption per Property ---")
+    print(f"{'Property':<20} {'Total':<20}")
+    rows = cursor.fetchall()
+    for row in rows:
+        property, total = row
+        print(f"{property:<20} {total:<20.2f}")
+
+    cursor.close()
+    conn.close()
+
+
+def get_most_energy_intensive_property():
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+            SELECT 
+                p.name,
+                SUM(e.value) AS total_kwh
+            FROM electricity e
+            JOIN properties p ON p.id = e.property
+            GROUP BY p.name
+            ORDER BY total_kwh DESC
+            LIMIT 1;
+        """)
+    print("--- Most Energy-Intensive Property ---")
+    print(f"{'Name':<20} {'Total kwh':<20}")
+    row = cursor.fetchone()
+    if row:
+        name, total_kwh = row
+        print(f"{name:<20} {total_kwh:<20.2f}")
+
+    cursor.close()
+    conn.close()
+
+
+def get_average_daily_consumption():
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+            SELECT 
+                p.name,
+                AVG(e.value) AS avg_kwh
+            FROM electricity e
+            JOIN properties p ON p.id = e.property
+            GROUP BY p.name;
+        """)
+    print("--- Average Daily Consumption ---")
+    print(f"{'Name':<20} {'Average kwh':<20}")
+    rows = cursor.fetchall()
+    for row in rows:
+        name, avg_kwh = row
+        print(f"{name:<20} {avg_kwh:<20.2f}")
+
+    cursor.close()
+    conn.close()
+
+
+def get_full_report():
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+            SELECT 
+                p.name,
+                SUM(e.value) AS total,
+                AVG(e.value) AS avg_daily,
+                MAX(e.value) AS max_daily
+            FROM electricity e
+            JOIN properties p ON p.id = e.property
+            GROUP BY p.name;
+        """)
+    print("--- Full Report ---")
+    print(f"{'Name':<20} {'Total':<20} {'Avg daily':<20} {'Max daily':<20}")
+    rows = cursor.fetchall()
+    for row in rows:
+        name, total, avg_daily, max_daily = row
+        print(f"{name:<20} {total:<20.2f} {avg_daily:<20.2f} {max_daily:<20.2f}")
+
+    cursor.close()
+    conn.close()
+
+
+def detect_anomalies():
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+            SELECT 
+                p.name,
+                e.timestamp,
+                e.value
+            FROM electricity e
+            JOIN properties p ON p.id = e.property
+            WHERE e.value > (
+                SELECT 2 * AVG(e2.value)
+                FROM electricity e2
+                WHERE e2.property = e.property
+            );
+        """)
+    print("--- Full Report ---")
+    print(f"{'Name':<20} {'Timestamp':<30} {'Value':<20}")
+    rows = cursor.fetchall()
+    for row in rows:
+        name, timestamp, value = row
+        print(f"{name:<20} {timestamp.strftime("%Y-%m-%d %H:%M:%S"):<30} {value:< 20}")
+
+    cursor.close()
+    conn.close()
+
+
+def get_highest_daily_consumption():
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+            SELECT 
+                p.name,
+                e.timestamp AS day,
+                e.value
+            FROM electricity e
+            JOIN properties p ON p.id = e.property
+            WHERE (e.property, e.value) IN (
+                SELECT 
+                    property,
+                    MAX(value)
+                FROM electricity
+                GROUP BY property
+            );
+        """)
+    print("--- Highest Daily Consumption ---")
+    print(f"{'Name':<20} {'Day':<20} {'Value':<20}")
+    rows = cursor.fetchall()
+    for row in rows:
+        name, timestamp, value = row
+        print(f"{name:<20} {timestamp.strftime("%Y-%m-%d"):<20} {value:< 20}")
+
+    cursor.close()
+    conn.close()
+
+
+def get_daily_ranking():
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+            SELECT 
+                e.timestamp,
+                p.name,
+                e.value,
+                RANK() OVER (
+                    PARTITION BY e.timestamp
+                    ORDER BY e.value DESC
+                ) AS rank_pos
+            FROM electricity e
+            JOIN properties p ON p.id = e.property
+            ORDER BY e.timestamp, rank_pos;
+        """)
+    print("--- Daily Ranking ---")
+    print(f"{'Timestamp':<20} {'Name':<20} {'Value':<20} {'Rank Position':<20}")
+    rows = cursor.fetchall()
+    for row in rows:
+        timestamp, name, value, rank_pos = row
+        print(
+            f"{timestamp.strftime("%Y-%m-%d"):<20} {name:<20}  {value:< 20} {rank_pos:< 20}")
+
+    cursor.close()
+    conn.close()
+
+
+def get_3day_moving_avg():
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+            SELECT 
+                p.name,
+                e.timestamp,
+                AVG(e.value) OVER (
+                    PARTITION BY e.property
+                    ORDER BY e.timestamp
+                    ROWS BETWEEN 2 PRECEDING AND CURRENT ROW
+                ) AS avg_3_day
+            FROM electricity e
+            JOIN properties p ON p.id = e.property
+            ORDER BY p.name, e.timestamp;
+        """)
+    print("--- 3-Day Moving Average ---")
+    print(f"{'Name':<20} {'Timestamp':<20} {'Average 3 day':<20}")
+    rows = cursor.fetchall()
+    for row in rows:
+        name, timestamp, avg_3_day = row
+        print(
+            f"{name:<20}  {timestamp.strftime("%Y-%m-%d"):<20} {avg_3_day:< 20}")
+
+    cursor.close()
+    conn.close()
+
+
 print("Choose statistic:")
 print("1. MIN")
 print("2. MAX")
 print("3. AVG")
 print("4. Stats Per Property")
-print("5. Exit")
+print("5. Total Consumption per Property")
+print("6. Most Energy-Intensive Property")
+print("7. Average Daily Consumption")
+print("8. Full Report")
+print("9. Detect Anomalies")
+print("10. Highest Daily Consumption")
+print("11. Daily Ranking")
+print("12. 3-Day Moving Average")
+
+
+print("0. Exit")
 
 
 while True:
@@ -128,6 +343,22 @@ while True:
     elif choice == "4":
         stats_per_property()
     elif choice == "5":
+        get_total_consumption_per_roperty()
+    elif choice == "6":
+        get_most_energy_intensive_property()
+    elif choice == "7":
+        get_average_daily_consumption()
+    elif choice == "8":
+        get_full_report()
+    elif choice == "9":
+        detect_anomalies()
+    elif choice == "10":
+        get_highest_daily_consumption()
+    elif choice == "11":
+        get_daily_ranking()
+    elif choice == "12":
+        get_3day_moving_avg()
+    elif choice == "0":
         break
     else:
         print("❌ Invalid choice")
