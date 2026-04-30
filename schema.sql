@@ -5,6 +5,19 @@ SET time_zone = '+00:00';
 SET foreign_key_checks = 0;
 SET sql_mode = 'NO_AUTO_VALUE_ON_ZERO';
 
+DROP TABLE IF EXISTS `building`;
+CREATE TABLE `building` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `date` date NOT NULL,
+  `use` double NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+
+DROP VIEW IF EXISTS `building_electricity_cost_daily`;
+CREATE TABLE `building_electricity_cost_daily` (`Building ID` int(11), `date` date, `price` decimal(10,2), `Use` double, `Cost Per Day` double);
+
+
 DROP TABLE IF EXISTS `DATA`;
 CREATE TABLE `DATA` (
   `id` tinyint(4) DEFAULT NULL,
@@ -28,6 +41,21 @@ CREATE TABLE `electricity` (
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 
+DROP VIEW IF EXISTS `electricity_cost_FIN_2025`;
+CREATE TABLE `electricity_cost_FIN_2025` (`country` varchar(100), `iso3_code` varchar(3), `date` date, `price` decimal(10,2));
+
+
+DROP TABLE IF EXISTS `electricity_prices`;
+CREATE TABLE `electricity_prices` (
+  `country` varchar(100) NOT NULL,
+  `iso3_code` varchar(3) NOT NULL,
+  `date` date NOT NULL,
+  `price` decimal(10,2) NOT NULL,
+  PRIMARY KEY (`iso3_code`,`date`),
+  KEY `date` (`date`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+
 DROP TABLE IF EXISTS `measurements`;
 CREATE TABLE `measurements` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -48,4 +76,10 @@ CREATE TABLE `properties` (
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 
--- 2026-04-02 05:27:11
+DROP TABLE IF EXISTS `building_electricity_cost_daily`;
+CREATE ALGORITHM=UNDEFINED SQL SECURITY DEFINER VIEW `building_electricity_cost_daily` AS select `b`.`id` AS `Building ID`,`e`.`date` AS `date`,`e`.`price` AS `price`,`b`.`use` AS `Use`,`e`.`price` * `b`.`use` AS `Cost Per Day` from (`electricity_cost_FIN_2025` `e` join `building` `b` on(`b`.`date` = `e`.`date`));
+
+DROP TABLE IF EXISTS `electricity_cost_FIN_2025`;
+CREATE ALGORITHM=UNDEFINED SQL SECURITY DEFINER VIEW `electricity_cost_FIN_2025` AS select `electricity_prices`.`country` AS `country`,`electricity_prices`.`iso3_code` AS `iso3_code`,`electricity_prices`.`date` AS `date`,`electricity_prices`.`price` AS `price` from `electricity_prices` where `electricity_prices`.`iso3_code` = 'FIN';
+
+-- 2026-04-30 05:02:41
