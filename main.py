@@ -97,7 +97,7 @@ def chart_menu():
         else:
             print("Invalid choice")
 
-# main meno
+# main menu
 
 
 def main():
@@ -123,5 +123,6 @@ def main():
             print("Invalid choice")
 
 
+# Run main() only when this file is executed directly, not when it is imported by another file
 if __name__ == "__main__":
     main()
